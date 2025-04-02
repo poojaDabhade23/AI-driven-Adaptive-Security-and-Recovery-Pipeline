@@ -1,40 +1,61 @@
-# Introduce Anomaly in a file
+# Introduce Anomaly in working directory
+
 import os
 import time
 import stat
 import shutil
 
-# Directory to store anomalous files
-output_directory = "/kaggle/working/anomalous_files"
+# Define directories
+base_directory = "/kaggle/working"
+app_dir = os.path.join(base_directory, "Application_files_Main")
+sandbox_dir = os.path.join(base_directory, "Application_files_sandboxed")
+anomalous_file_name = "anomalous_file.txt"
+anomalous_file_path = os.path.join(app_dir, anomalous_file_name)
 
-# Clean the output directory if it exists
-if os.path.exists(output_directory):
-    shutil.rmtree(output_directory)  # Remove all contents of the directory
-    
-os.makedirs(output_directory, exist_ok=True)
+# Clean up base directory
+for filename in os.listdir(base_directory):
+    file_path = os.path.join(base_directory, filename)
+    try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+    except Exception as e:
+        print(f"Failed to delete {file_path}. Reason: {e}")
 
-print("Introduce Anomaly in a file...")
+# Recreate application and sandbox directories
+os.makedirs(app_dir, exist_ok=True)
+os.makedirs(sandbox_dir, exist_ok=True)
 
-# Create the anomalous file
-anomalous_file_path = os.path.join(output_directory, "anomalous_file.txt")
+
+# Step 1: Create 500 clean files in application_files
+for i in range(1, 501):
+    file_name = f"file{i}.txt"
+    file_path = os.path.join(app_dir, file_name)
+    with open(file_path, "w") as file:
+        file.write(f"This is file {i}")
+
+print(f"✅ Main application files present in a directory: {app_dir}")
+
+# Step 2: Copy clean files to sandbox before adding anomaly
+for file_name in os.listdir(app_dir):
+    src = os.path.join(app_dir, file_name)
+    dest = os.path.join(sandbox_dir, file_name)
+    shutil.copy(src, dest)
+
+print(f"✅ Backed up original files in a sandboxing directory: {sandbox_dir}")
+
+# Step 3: Introduce the anomalous file (after sandbox copy)
+print("⚠️ Introducing anomaly in: anomalous_file.txt")
 with open(anomalous_file_path, "w") as file:
-    file.write("A" * 10_000_000)  # Create a file with 10 MB size.
+    file.write("A" * 10_000_000)  # 10MB junk
+    file.write("\x00\xFF\xAA" * 1000)
 
-# Set future modification and creation time
-future_time = time.mktime((2030, 1, 1, 0, 0, 0, 0, 0, 0))  # Future date: 2030
+# Set future timestamps
+future_time = time.mktime((2030, 1, 1, 0, 0, 0, 0, 0, 0))
 os.utime(anomalous_file_path, (future_time, future_time))
 
-# Add binary garbage data to the anomalous file
-with open(anomalous_file_path, "w") as file:
-    file.write("\x00\xFF\xAA" * 1000)  # Add binary garbage data.
+# Set to executable-only
+os.chmod(anomalous_file_path, stat.S_IXUSR)
 
-# Create duplicate files with the same content
-for i in range(100):
-    duplicate_file_path = os.path.join(output_directory, f"duplicate_{i}.txt")
-    with open(duplicate_file_path, "w") as file:
-        file.write("Duplicate content")
-
-# Change permissions of the anomalous file to make it executable only
-os.chmod(anomalous_file_path, stat.S_IXUSR)  # Make it executable only.
-
-print(f"Introducing Anomaly in a file done. Files are stored in: {output_directory}")
+print(f"✅ Anomalous file is now added to: {anomalous_file_path}")

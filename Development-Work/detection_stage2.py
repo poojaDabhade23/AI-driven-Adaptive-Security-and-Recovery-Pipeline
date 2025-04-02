@@ -4,53 +4,66 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
+import matplotlib.pyplot as plt
 
 print("Detection Stage: AI-Powered Threat Classification...")
-# Example training data
+
+# Training data
 data = {
-    "file_name": ["file1.txt", "file2.txt", "file3.txt"],
-    "size": [2000, 4000, 6000],
-    "modification_time": [1.735270e+09, 1.735271e+09, 1.735272e+09],
-    "creation_time": [1.735269e+09, 1.735269e+09, 1.735270e+09],
-    "threat": ["benign", "ransomware", "phishing"]
+    "file_name": ["file1.txt", "file2.txt", "file3.txt", "file4.txt", "file5.txt", "file6.txt"],
+    "size": [2000, 4000, 6000, 2500, 5500, 3000],
+    "modification_time": [
+        1.735270e+09, 1.735271e+09, 1.735272e+09,
+        1.735273e+09, 1.735274e+09, 1.735269e+09
+    ],
+    "creation_time": [
+        1.735269e+09, 1.735269e+09, 1.735270e+09,
+        1.735270e+09, 1.735271e+09, 1.735268e+09
+    ],
+    "threat": ["benign", "ransomware", "phishing", "benign", "ransomware", "phishing"]
 }
 
-# Convert data to DataFrame
 df = pd.DataFrame(data)
-
-# Encode labels for threats
 label_encoder = LabelEncoder()
 df['threat_label'] = label_encoder.fit_transform(df['threat'])
 
-# Training the Random Forest Classifier
 features = ["size", "modification_time", "creation_time"]
 X_train = df[features]
 y_train = df['threat_label']
 
-model = RandomForestClassifier()
+model = RandomForestClassifier(n_estimators=200, max_depth=10, random_state=42)
 model.fit(X_train, y_train)
 
-# Input anomaly data from Monitoring Stage
+# Test input
 anomalous_data = pd.DataFrame({
     "file_name": ["anomalous_file.txt"],
     "size": [5000],
     "modification_time": [1.735275e+09],
     "creation_time": [1.735275e+09]
 })
-
-# Predict threat and confidence
 X_test = anomalous_data[features]
 predictions = model.predict(X_test)
 probabilities = model.predict_proba(X_test)
 
-# Get predicted threat and confidence
 predicted_label = label_encoder.inverse_transform(predictions)[0]
 confidence = np.max(probabilities) * 100
-
-# Output results in the desired format
 file_name = anomalous_data['file_name'][0]
+
+# Display results
 print(f"File: {file_name}")
 print(f"Predicted Threat: {predicted_label}")
 print(f"Confidence: {confidence:.2f}%")
+
+# 📊 PLOT: Show class probabilities
+class_labels = label_encoder.classes_
+plt.figure(figsize=(6, 4))
+plt.bar(class_labels, probabilities[0], color='skyblue')
+plt.title("Threat Classification Probabilities")
+plt.ylabel("Probability")
+plt.xlabel("Threat Type")
+plt.ylim(0, 1)
+plt.grid(True, axis='y')
+plt.tight_layout()
+plt.show()
 
 print("Detection Stage: AI-Powered Threat Classification done...")
