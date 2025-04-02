@@ -3,6 +3,7 @@
 import os
 import shutil
 import random
+import pandas as pd  # ✅ added for CSV logging
 
 print("🛠️ Resolution Stage: AI-Powered Recovery & Validation")
 
@@ -68,5 +69,7 @@ print("\n📋 Recovery Summary:")
 for entry in recovery_log:
     print(f"{entry['file']} → {entry['action']} | Confidence: {entry['confidence']}% | Validation: {entry['validation']}")
 
-print("\n✅ Resolution Stage Completed.")
-
+# ✅ 5. Save to CSV
+pd.DataFrame(recovery_log).to_csv("/kaggle/working/resolution_log.csv", index=False)
+print("\n✅ Resolution log saved to resolution_log.csv")
+print("✅ Resolution Stage Completed.")

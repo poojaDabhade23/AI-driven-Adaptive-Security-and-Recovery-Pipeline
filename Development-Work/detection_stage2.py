@@ -66,4 +66,13 @@ plt.grid(True, axis='y')
 plt.tight_layout()
 plt.show()
 
+# ✅ Save to CSV
+output_df = pd.DataFrame({
+    "file_name": [file_name],
+    "predicted_threat": [predicted_label],
+    "confidence": [confidence]
+})
+output_df.to_csv("/kaggle/working/detection_log.csv", index=False)
+print("✅ Detection log saved to detection_log.csv")
+
 print("Detection Stage: AI-Powered Threat Classification done...")

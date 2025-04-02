@@ -1,0 +1,2 @@
+file,confidence,action,validation,predicted_threat
+anomalous_file.txt,92,replace_and_restart,✔️ Passed,ransomware

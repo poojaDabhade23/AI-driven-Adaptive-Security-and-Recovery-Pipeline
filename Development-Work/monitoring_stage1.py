@@ -34,6 +34,9 @@ model.fit(X_train)
 # Predict anomalies
 features["anomaly"] = model.predict(X_train)
 
+features.to_csv("/kaggle/working/monitoring_log.csv", index=False)
+print("✅ Monitoring log saved.")
+
 # Print anomaly details
 anomalies = features[features["anomaly"] == -1]
 print(anomalies)

@@ -1,0 +1,2 @@
+file_name,size,modification_time,creation_time,mod_freq,classification,quarantined_path
+anomalous_file.txt,10000000,1735696980.0,1735696920.0,2,Malicious,/kaggle/working/Quarantined_files/anomalous_file.txt
